@@ -62,22 +62,21 @@ export default function App() {
   return (
     <Router>
       <div style={styles.appContainer}>
+        {/* ✅ Toggle Button Outside Sidebar */}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          style={styles.toggleBtn}
+        >
+          {collapsed ? '☰' : '✖'}
+        </button>
+
+        {/* Sidebar */}
         <div
           style={{
             ...styles.sidebar,
             width: collapsed ? '60px' : '240px'
           }}
         >
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              ...styles.toggleBtn,
-              left: collapsed ? '60px' : '240px' // stick to sidebar edge
-            }}
-          >
-            {collapsed ? '☰' : '✖'}
-          </button>
-
           <div style={styles.sidebarContent}>
             {!collapsed && <h1 style={styles.logo}>🍽️ POS System</h1>}
 
@@ -105,6 +104,7 @@ export default function App() {
           </div>
         </div>
 
+        {/* Main Content */}
         <div style={styles.mainContent}>
           <Routes>
             <Route path="/" element={<Navigate to="/menu" />} />
@@ -120,9 +120,7 @@ export default function App() {
 }
 
 function SidebarLink({ label, to, collapsed }) {
-  const icon = label.split(' ')[0]; // emoji icon
-  const text = label.split(' ').slice(1).join(' '); // text after emoji
-
+  const icon = label.split(' ')[0];
   return (
     <Link
       to={to}
@@ -206,15 +204,14 @@ const styles = {
   toggleBtn: {
     position: 'fixed',
     top: '1rem',
-    transform: 'translateX(-100%)',
+    left: '1rem',
     zIndex: 2000,
     backgroundColor: '#1565c0',
     color: '#fff',
     border: 'none',
     padding: '0.5rem 0.8rem',
     borderRadius: '4px',
-    cursor: 'pointer',
-    transition: 'left 0.3s'
+    cursor: 'pointer'
   },
   logo: {
     marginBottom: '1.5rem',
