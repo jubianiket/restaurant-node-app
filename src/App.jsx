@@ -68,33 +68,40 @@ export default function App() {
             width: collapsed ? '60px' : '240px'
           }}
         >
-          <button onClick={() => setCollapsed(!collapsed)} style={styles.toggleBtn}>
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            style={{
+              ...styles.toggleBtn,
+              left: collapsed ? '60px' : '240px' // stick to sidebar edge
+            }}
+          >
             {collapsed ? '☰' : '✖'}
           </button>
-          <h1 style={{ ...styles.logo, display: collapsed ? 'none' : 'block' }}>
-            🍽️ POS System
-          </h1>
 
-          <div style={collapsed ? styles.collapsedText : styles.infoText}>
-            🕒 <strong>{!collapsed && clock}</strong>
-          </div>
+          <div style={styles.sidebarContent}>
+            {!collapsed && <h1 style={styles.logo}>🍽️ POS System</h1>}
 
-          <div style={{ ...(collapsed ? styles.collapsedText : styles.infoText), marginBottom: '2rem' }}>
-            💰 <strong>{!collapsed && `₹${totalSales.toFixed(2)}`}</strong>
-          </div>
+            <div style={collapsed ? styles.collapsedText : styles.infoText}>
+              🕒 <strong>{!collapsed && clock}</strong>
+            </div>
 
-          <SidebarLink label="📋 Menu" to="/menu" collapsed={collapsed} />
-          <SidebarLink label="🧾 Orders" to="/orders" collapsed={collapsed} />
-          <SidebarLink label="📦 History" to="/history" collapsed={collapsed} />
-          <SidebarLink label="⚙️ Settings" to="/settings" collapsed={collapsed} />
+            <div style={{ ...(collapsed ? styles.collapsedText : styles.infoText), marginBottom: '2rem' }}>
+              💰 <strong>{!collapsed && `₹${totalSales.toFixed(2)}`}</strong>
+            </div>
 
-          <div style={{ marginTop: 'auto' }}>
-            <button
-              onClick={async () => await supabase.auth.signOut()}
-              style={styles.logoutBtn}
-            >
-              {collapsed ? '🚪' : '🚪 Logout'}
-            </button>
+            <SidebarLink label="📋 Menu" to="/menu" collapsed={collapsed} />
+            <SidebarLink label="🧾 Orders" to="/orders" collapsed={collapsed} />
+            <SidebarLink label="📦 History" to="/history" collapsed={collapsed} />
+            <SidebarLink label="⚙️ Settings" to="/settings" collapsed={collapsed} />
+
+            <div style={{ marginTop: 'auto' }}>
+              <button
+                onClick={async () => await supabase.auth.signOut()}
+                style={styles.logoutBtn}
+              >
+                {collapsed ? '🚪' : '🚪 Logout'}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -129,8 +136,7 @@ function SidebarLink({ label, to, collapsed }) {
         transition: 'background 0.3s',
         fontSize: '1rem',
         backgroundColor: window.location.pathname === to ? '#1565c0' : 'transparent',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden'
+        textAlign: collapsed ? 'center' : 'left'
       }}
     >
       {collapsed ? icon : label}
@@ -183,23 +189,32 @@ const styles = {
     fontFamily: 'Segoe UI, sans-serif'
   },
   sidebar: {
+    position: 'relative',
     backgroundColor: '#212121',
     color: '#fff',
-    padding: '1.5rem 0.5rem',
-    display: 'flex',
-    flexDirection: 'column',
-    boxShadow: '2px 0 5px rgba(0,0,0,0.1)',
     transition: 'width 0.3s ease',
-    overflow: 'hidden',
+    overflowX: 'hidden',
     height: '100vh',
     zIndex: 1000
   },
-  mainContent: {
-    flex: 1,
-    padding: '1.5rem',
-    backgroundColor: '#f5f5f5',
-    overflowY: 'auto',
-    width: '100%'
+  sidebarContent: {
+    padding: '1.5rem 0.5rem',
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%'
+  },
+  toggleBtn: {
+    position: 'fixed',
+    top: '1rem',
+    transform: 'translateX(-100%)',
+    zIndex: 2000,
+    backgroundColor: '#1565c0',
+    color: '#fff',
+    border: 'none',
+    padding: '0.5rem 0.8rem',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    transition: 'left 0.3s'
   },
   logo: {
     marginBottom: '1.5rem',
@@ -213,8 +228,14 @@ const styles = {
   },
   collapsedText: {
     marginBottom: '1rem',
-    fontSize: '1rem',
+    fontSize: '1.5rem',
     textAlign: 'center'
+  },
+  mainContent: {
+    flex: 1,
+    padding: '1.5rem',
+    backgroundColor: '#f5f5f5',
+    overflowY: 'auto'
   },
   loginContainer: {
     maxWidth: '400px',
@@ -239,17 +260,5 @@ const styles = {
     fontSize: '1rem',
     cursor: 'pointer',
     textAlign: 'center'
-  },
-  toggleBtn: {
-    position: 'absolute',
-    top: '1rem',
-    left: '0.5rem',
-    backgroundColor: '#1565c0',
-    color: '#fff',
-    border: 'none',
-    padding: '0.5rem 0.8rem',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    zIndex: 1100
   }
 };
