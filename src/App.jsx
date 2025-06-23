@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import Menu from './Menu';
 import Orders from './Orders';
 import Settings from './Settings';
@@ -12,25 +12,34 @@ const supabase = createClient(
 );
 
 export default function App() {
+  return (
+    <Router>
+      <AppLayout />
+    </Router>
+  );
+}
+
+function AppLayout() {
   const [user, setUser] = useState(null);
   const [clock, setClock] = useState('');
   const [totalSales, setTotalSales] = useState(0);
   const [collapsed, setCollapsed] = useState(window.innerWidth < 768);
+  const location = useLocation();
 
+  // Auth
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setUser(data.session?.user ?? null);
     });
-
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
-
     return () => {
       listener.subscription.unsubscribe();
     };
   }, []);
 
+  // Clock
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date();
@@ -44,6 +53,7 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
+  // Sales
   useEffect(() => {
     const fetchTotalSales = async () => {
       const { data, error } = await supabase.from('orders').select('*');
@@ -57,65 +67,81 @@ export default function App() {
     fetchTotalSales();
   }, []);
 
+  // Auto collapse + scroll top on route change
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      setCollapsed(true);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [location]);
+
+  // Keyboard shortcut: Ctrl+B to toggle sidebar
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.ctrlKey && e.key === 'b') {
+        setCollapsed((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
   if (!user) return <LoginForm />;
 
   return (
-    <Router>
-      <div style={styles.appContainer}>
-        {/* Sidebar with toggle inside */}
-        <div style={{ ...styles.sidebar, width: collapsed ? '60px' : '240px' }}>
-          {/* ✅ Toggle button absolutely positioned inside sidebar */}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            style={styles.toggleBtn}
-          >
-            {collapsed ? '☰' : '✖'}
-          </button>
+    <div style={styles.appContainer}>
+      {/* Sidebar */}
+      <div style={{ ...styles.sidebar, width: collapsed ? '60px' : '240px' }}>
+        <button onClick={() => setCollapsed(!collapsed)} style={styles.toggleBtn}>
+          {collapsed ? '☰' : '✖'}
+        </button>
 
-          <div style={styles.sidebarContent}>
-            {!collapsed && <h1 style={styles.logo}>🍽️ POS System</h1>}
+        <div style={styles.sidebarContent}>
+          {!collapsed && <h1 style={styles.logo}>🍽️ POS System</h1>}
 
-            <div style={collapsed ? styles.collapsedText : styles.infoText}>
-              🕒 <strong>{!collapsed && clock}</strong>
-            </div>
+          <div style={collapsed ? styles.collapsedText : styles.infoText}>
+            🕒 <strong>{!collapsed && clock}</strong>
+          </div>
 
-            <div style={{ ...(collapsed ? styles.collapsedText : styles.infoText), marginBottom: '2rem' }}>
-              💰 <strong>{!collapsed && `₹${totalSales.toFixed(2)}`}</strong>
-            </div>
+          <div style={{ ...(collapsed ? styles.collapsedText : styles.infoText), marginBottom: '2rem' }}>
+            💰 <strong>{!collapsed && `₹${totalSales.toFixed(2)}`}</strong>
+          </div>
 
-            <SidebarLink label="📋 Menu" to="/menu" collapsed={collapsed} />
-            <SidebarLink label="🧾 Orders" to="/orders" collapsed={collapsed} />
-            <SidebarLink label="📦 History" to="/history" collapsed={collapsed} />
-            <SidebarLink label="⚙️ Settings" to="/settings" collapsed={collapsed} />
+          <SidebarLink label="📋 Menu" to="/menu" collapsed={collapsed} />
+          <SidebarLink label="🧾 Orders" to="/orders" collapsed={collapsed} />
+          <SidebarLink label="📦 History" to="/history" collapsed={collapsed} />
+          <SidebarLink label="⚙️ Settings" to="/settings" collapsed={collapsed} />
 
-            <div style={{ marginTop: 'auto' }}>
-              <button
-                onClick={async () => await supabase.auth.signOut()}
-                style={styles.logoutBtn}
-              >
-                {collapsed ? '🚪' : '🚪 Logout'}
-              </button>
-            </div>
+          <div style={{ marginTop: 'auto' }}>
+            <button
+              onClick={async () => await supabase.auth.signOut()}
+              style={styles.logoutBtn}
+            >
+              {collapsed ? '🚪' : '🚪 Logout'}
+            </button>
           </div>
         </div>
-
-        {/* Main Content */}
-        <div style={styles.mainContent}>
-          <Routes>
-            <Route path="/" element={<Navigate to="/menu" />} />
-            <Route path="/menu" element={<Menu />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/history" element={<OrderHistory />} />
-            <Route path="/settings" element={<Settings />} />
-          </Routes>
-        </div>
       </div>
-    </Router>
+
+      {/* Main Content */}
+      <div style={styles.mainContent}>
+        <Routes>
+          <Route path="/" element={<Navigate to="/menu" />} />
+          <Route path="/menu" element={<Menu />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/history" element={<OrderHistory />} />
+          <Route path="/settings" element={<Settings />} />
+        </Routes>
+      </div>
+    </div>
   );
 }
 
 function SidebarLink({ label, to, collapsed }) {
+  const location = useLocation();
   const icon = label.split(' ')[0];
+  const isActive = location.pathname === to;
+
   return (
     <Link
       to={to}
@@ -128,7 +154,7 @@ function SidebarLink({ label, to, collapsed }) {
         marginBottom: '0.5rem',
         transition: 'background 0.3s',
         fontSize: '1rem',
-        backgroundColor: window.location.pathname === to ? '#1565c0' : 'transparent',
+        backgroundColor: isActive ? '#1565c0' : 'transparent',
         textAlign: collapsed ? 'center' : 'left'
       }}
     >
@@ -182,7 +208,7 @@ const styles = {
     fontFamily: 'Segoe UI, sans-serif'
   },
   sidebar: {
-    position: 'relative', // important for absolute positioning inside
+    position: 'relative',
     backgroundColor: '#212121',
     color: '#fff',
     transition: 'width 0.3s ease',
