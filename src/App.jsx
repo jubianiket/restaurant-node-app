@@ -60,59 +60,57 @@ export default function App() {
   if (!user) return <LoginForm />;
 
   return (
-    <>
-      {/* ✅ Toggle Button outside sidebar for visibility */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        style={styles.toggleBtn}
-      >
-        {collapsed ? '☰' : '✖'}
-      </button>
+    <Router>
+      <div style={styles.appContainer}>
+        {/* Sidebar with toggle inside */}
+        <div style={{ ...styles.sidebar, width: collapsed ? '60px' : '240px' }}>
+          {/* ✅ Toggle button absolutely positioned inside sidebar */}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            style={styles.toggleBtn}
+          >
+            {collapsed ? '☰' : '✖'}
+          </button>
 
-      <Router>
-        <div style={styles.appContainer}>
-          {/* Sidebar */}
-          <div style={{ ...styles.sidebar, width: collapsed ? '60px' : '240px' }}>
-            <div style={styles.sidebarContent}>
-              {!collapsed && <h1 style={styles.logo}>🍽️ POS System</h1>}
+          <div style={styles.sidebarContent}>
+            {!collapsed && <h1 style={styles.logo}>🍽️ POS System</h1>}
 
-              <div style={collapsed ? styles.collapsedText : styles.infoText}>
-                🕒 <strong>{!collapsed && clock}</strong>
-              </div>
+            <div style={collapsed ? styles.collapsedText : styles.infoText}>
+              🕒 <strong>{!collapsed && clock}</strong>
+            </div>
 
-              <div style={{ ...(collapsed ? styles.collapsedText : styles.infoText), marginBottom: '2rem' }}>
-                💰 <strong>{!collapsed && `₹${totalSales.toFixed(2)}`}</strong>
-              </div>
+            <div style={{ ...(collapsed ? styles.collapsedText : styles.infoText), marginBottom: '2rem' }}>
+              💰 <strong>{!collapsed && `₹${totalSales.toFixed(2)}`}</strong>
+            </div>
 
-              <SidebarLink label="📋 Menu" to="/menu" collapsed={collapsed} />
-              <SidebarLink label="🧾 Orders" to="/orders" collapsed={collapsed} />
-              <SidebarLink label="📦 History" to="/history" collapsed={collapsed} />
-              <SidebarLink label="⚙️ Settings" to="/settings" collapsed={collapsed} />
+            <SidebarLink label="📋 Menu" to="/menu" collapsed={collapsed} />
+            <SidebarLink label="🧾 Orders" to="/orders" collapsed={collapsed} />
+            <SidebarLink label="📦 History" to="/history" collapsed={collapsed} />
+            <SidebarLink label="⚙️ Settings" to="/settings" collapsed={collapsed} />
 
-              <div style={{ marginTop: 'auto' }}>
-                <button
-                  onClick={async () => await supabase.auth.signOut()}
-                  style={styles.logoutBtn}
-                >
-                  {collapsed ? '🚪' : '🚪 Logout'}
-                </button>
-              </div>
+            <div style={{ marginTop: 'auto' }}>
+              <button
+                onClick={async () => await supabase.auth.signOut()}
+                style={styles.logoutBtn}
+              >
+                {collapsed ? '🚪' : '🚪 Logout'}
+              </button>
             </div>
           </div>
-
-          {/* Main Content */}
-          <div style={styles.mainContent}>
-            <Routes>
-              <Route path="/" element={<Navigate to="/menu" />} />
-              <Route path="/menu" element={<Menu />} />
-              <Route path="/orders" element={<Orders />} />
-              <Route path="/history" element={<OrderHistory />} />
-              <Route path="/settings" element={<Settings />} />
-            </Routes>
-          </div>
         </div>
-      </Router>
-    </>
+
+        {/* Main Content */}
+        <div style={styles.mainContent}>
+          <Routes>
+            <Route path="/" element={<Navigate to="/menu" />} />
+            <Route path="/menu" element={<Menu />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/history" element={<OrderHistory />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </div>
+      </div>
+    </Router>
   );
 }
 
@@ -184,7 +182,7 @@ const styles = {
     fontFamily: 'Segoe UI, sans-serif'
   },
   sidebar: {
-    position: 'relative',
+    position: 'relative', // important for absolute positioning inside
     backgroundColor: '#212121',
     color: '#fff',
     transition: 'width 0.3s ease',
@@ -199,10 +197,10 @@ const styles = {
     height: '100%'
   },
   toggleBtn: {
-    position: 'fixed',
+    position: 'absolute',
     top: '1rem',
     left: '1rem',
-    zIndex: 3000,
+    zIndex: 2000,
     backgroundColor: '#1565c0',
     color: '#fff',
     border: 'none',
