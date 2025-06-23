@@ -65,42 +65,38 @@ export default function App() {
         <div
           style={{
             ...styles.sidebar,
-            ...(collapsed ? styles.sidebarCollapsed : {})
+            width: collapsed ? '60px' : '240px'
           }}
         >
-          <h1 style={styles.logo}>🍽️ POS System</h1>
           <button onClick={() => setCollapsed(!collapsed)} style={styles.toggleBtn}>
             {collapsed ? '☰' : '✖'}
           </button>
+          <h1 style={{ ...styles.logo, display: collapsed ? 'none' : 'block' }}>
+            🍽️ POS System
+          </h1>
 
-          {!collapsed && (
-            <>
-              <div style={styles.infoText}>🕒 <strong>{clock}</strong></div>
-              <div style={{ ...styles.infoText, marginBottom: '2rem' }}>
-                💰 <strong>₹{totalSales.toFixed(2)}</strong>
-              </div>
+          <div style={collapsed ? styles.collapsedText : styles.infoText}>
+            🕒 <strong>{!collapsed && clock}</strong>
+          </div>
 
-              <SidebarLink label="📋 Menu" to="/menu" />
-              <SidebarLink label="🧾 Orders" to="/orders" />
-              <SidebarLink label="📦 History" to="/history" />
-              <SidebarLink label="⚙️ Settings" to="/settings" />
+          <div style={{ ...(collapsed ? styles.collapsedText : styles.infoText), marginBottom: '2rem' }}>
+            💰 <strong>{!collapsed && `₹${totalSales.toFixed(2)}`}</strong>
+          </div>
 
-              <div style={{ marginTop: 'auto' }}>
-                <button
-                  onClick={async () => await supabase.auth.signOut()}
-                  style={styles.logoutBtn}
-                >
-                  🚪 Logout
-                </button>
-              </div>
-            </>
-          )}
+          <SidebarLink label="📋 Menu" to="/menu" collapsed={collapsed} />
+          <SidebarLink label="🧾 Orders" to="/orders" collapsed={collapsed} />
+          <SidebarLink label="📦 History" to="/history" collapsed={collapsed} />
+          <SidebarLink label="⚙️ Settings" to="/settings" collapsed={collapsed} />
+
+          <div style={{ marginTop: 'auto' }}>
+            <button
+              onClick={async () => await supabase.auth.signOut()}
+              style={styles.logoutBtn}
+            >
+              {collapsed ? '🚪' : '🚪 Logout'}
+            </button>
+          </div>
         </div>
-
-        {/* Overlay for mobile */}
-        {!collapsed && window.innerWidth < 768 && (
-          <div onClick={() => setCollapsed(true)} style={styles.overlay}></div>
-        )}
 
         <div style={styles.mainContent}>
           <Routes>
@@ -116,7 +112,10 @@ export default function App() {
   );
 }
 
-function SidebarLink({ label, to }) {
+function SidebarLink({ label, to, collapsed }) {
+  const icon = label.split(' ')[0]; // emoji icon
+  const text = label.split(' ').slice(1).join(' '); // text after emoji
+
   return (
     <Link
       to={to}
@@ -129,10 +128,12 @@ function SidebarLink({ label, to }) {
         marginBottom: '0.5rem',
         transition: 'background 0.3s',
         fontSize: '1rem',
-        backgroundColor: window.location.pathname === to ? '#1565c0' : 'transparent'
+        backgroundColor: window.location.pathname === to ? '#1565c0' : 'transparent',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden'
       }}
     >
-      {label}
+      {collapsed ? icon : label}
     </Link>
   );
 }
@@ -178,30 +179,20 @@ function LoginForm() {
 const styles = {
   appContainer: {
     display: 'flex',
-    flexDirection: 'row',
     height: '100vh',
-    fontFamily: 'Segoe UI, sans-serif',
-    position: 'relative'
+    fontFamily: 'Segoe UI, sans-serif'
   },
   sidebar: {
-    width: '240px',
     backgroundColor: '#212121',
     color: '#fff',
-    padding: '1.5rem',
+    padding: '1.5rem 0.5rem',
     display: 'flex',
     flexDirection: 'column',
     boxShadow: '2px 0 5px rgba(0,0,0,0.1)',
-    transition: 'transform 0.3s ease-in-out',
-    zIndex: 1000,
-    position: window.innerWidth < 768 ? 'absolute' : 'relative',
+    transition: 'width 0.3s ease',
+    overflow: 'hidden',
     height: '100vh',
-    top: 0,
-    left: 0
-  },
-  sidebarCollapsed: {
-    transform: 'translateX(-100%)',
-    pointerEvents: 'none',
-    visibility: 'hidden'
+    zIndex: 1000
   },
   mainContent: {
     flex: 1,
@@ -211,24 +202,29 @@ const styles = {
     width: '100%'
   },
   logo: {
-    marginBottom: '1rem',
-    fontSize: '1.5rem'
+    marginBottom: '1.5rem',
+    fontSize: '1.5rem',
+    textAlign: 'center'
   },
   infoText: {
     marginBottom: '1rem',
-    fontSize: '1rem'
+    fontSize: '1rem',
+    paddingLeft: '1rem'
+  },
+  collapsedText: {
+    marginBottom: '1rem',
+    fontSize: '1rem',
+    textAlign: 'center'
   },
   loginContainer: {
     maxWidth: '400px',
     margin: 'auto',
-    padding: '2rem',
-    fontFamily: 'Segoe UI, sans-serif'
+    padding: '2rem'
   },
   inputStyle: {
     padding: '0.75rem',
     marginBottom: '1rem',
     width: '100%',
-    boxSizing: 'border-box',
     fontSize: '1rem',
     borderRadius: '4px',
     border: '1px solid #ccc'
@@ -241,12 +237,13 @@ const styles = {
     backgroundColor: '#d32f2f',
     color: '#fff',
     fontSize: '1rem',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    textAlign: 'center'
   },
   toggleBtn: {
     position: 'absolute',
     top: '1rem',
-    right: '-2.5rem',
+    left: '0.5rem',
     backgroundColor: '#1565c0',
     color: '#fff',
     border: 'none',
@@ -254,14 +251,5 @@ const styles = {
     borderRadius: '4px',
     cursor: 'pointer',
     zIndex: 1100
-  },
-  overlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100vw',
-    height: '100vh',
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    zIndex: 999
   }
 };
