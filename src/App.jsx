@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import Menu from './Menu';
 import Orders from './Orders';
 import Settings from './Settings';
@@ -12,7 +13,6 @@ const supabase = createClient(
 
 export default function App() {
   const [user, setUser] = useState(null);
-  const [view, setView] = useState('menu');
   const [clock, setClock] = useState('');
   const [totalSales, setTotalSales] = useState(0);
 
@@ -54,59 +54,60 @@ export default function App() {
       }
     };
     fetchTotalSales();
-  }, [view]);
+  }, []);
 
   if (!user) return <LoginForm />;
 
   return (
-    <div style={styles.appContainer}>
-      {/* Sidebar */}
-      <div style={styles.sidebar}>
-        <h1 style={styles.logo}>🍽️ POS System</h1>
-        <div style={styles.infoText}>🕒 <strong>{clock}</strong></div>
-        <div style={{ ...styles.infoText, marginBottom: '2rem' }}>💰 <strong>₹{totalSales.toFixed(2)}</strong></div>
+    <Router>
+      <div style={styles.appContainer}>
+        <div style={styles.sidebar}>
+          <h1 style={styles.logo}>🍽️ POS System</h1>
+          <div style={styles.infoText}>🕒 <strong>{clock}</strong></div>
+          <div style={{ ...styles.infoText, marginBottom: '2rem' }}>💰 <strong>₹{totalSales.toFixed(2)}</strong></div>
 
-        <SidebarButton label="📋 Menu" active={view === 'menu'} onClick={() => setView('menu')} />
-        <SidebarButton label="🧾 Orders" active={view === 'orders'} onClick={() => setView('orders')} />
-        <SidebarButton label="📦 History" active={view === 'history'} onClick={() => setView('history')} />
-        <SidebarButton label="⚙️ Settings" active={view === 'settings'} onClick={() => setView('settings')} />
+          <SidebarLink label="📋 Menu" to="/menu" />
+          <SidebarLink label="🧾 Orders" to="/orders" />
+          <SidebarLink label="📦 History" to="/history" />
+          <SidebarLink label="⚙️ Settings" to="/settings" />
 
-        <div style={{ marginTop: 'auto' }}>
-          <SidebarButton label="🚪 Logout" danger onClick={async () => await supabase.auth.signOut()} />
+          <div style={{ marginTop: 'auto' }}>
+            <button onClick={async () => await supabase.auth.signOut()} style={styles.logoutBtn}>🚪 Logout</button>
+          </div>
+        </div>
+
+        <div style={styles.mainContent}>
+          <Routes>
+            <Route path="/" element={<Navigate to="/menu" />} />
+            <Route path="/menu" element={<Menu />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/history" element={<OrderHistory />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
         </div>
       </div>
-
-      {/* Main Content */}
-      <div style={styles.mainContent}>
-        {view === 'menu' && <Menu />}
-        {view === 'orders' && <Orders />}
-        {view === 'history' && <OrderHistory />}
-        {view === 'settings' && <Settings />}
-      </div>
-    </div>
+    </Router>
   );
 }
 
-function SidebarButton({ label, active, danger = false, onClick }) {
+function SidebarLink({ label, to }) {
   return (
-    <button
-      onClick={onClick}
+    <Link
+      to={to}
       style={{
-        backgroundColor: active ? '#1565c0' : danger ? '#d32f2f' : 'transparent',
+        display: 'block',
         color: '#fff',
-        border: 'none',
+        textDecoration: 'none',
         padding: '0.75rem 1rem',
-        textAlign: 'left',
-        cursor: 'pointer',
-        marginBottom: '0.5rem',
         borderRadius: '6px',
-        fontSize: '1rem',
+        marginBottom: '0.5rem',
         transition: 'background 0.3s',
-        width: '100%'
+        fontSize: '1rem',
+        backgroundColor: window.location.pathname === to ? '#1565c0' : 'transparent'
       }}
     >
       {label}
-    </button>
+    </Link>
   );
 }
 
@@ -192,5 +193,15 @@ const styles = {
     fontSize: '1rem',
     borderRadius: '4px',
     border: '1px solid #ccc'
+  },
+  logoutBtn: {
+    width: '100%',
+    padding: '0.75rem 1rem',
+    border: 'none',
+    borderRadius: '6px',
+    backgroundColor: '#d32f2f',
+    color: '#fff',
+    fontSize: '1rem',
+    cursor: 'pointer'
   }
 };
