@@ -15,6 +15,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [clock, setClock] = useState('');
   const [totalSales, setTotalSales] = useState(0);
+  const [collapsed, setCollapsed] = useState(window.innerWidth < 768);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -61,20 +62,45 @@ export default function App() {
   return (
     <Router>
       <div style={styles.appContainer}>
-        <div style={styles.sidebar}>
+        <div
+          style={{
+            ...styles.sidebar,
+            ...(collapsed ? styles.sidebarCollapsed : {})
+          }}
+        >
           <h1 style={styles.logo}>🍽️ POS System</h1>
-          <div style={styles.infoText}>🕒 <strong>{clock}</strong></div>
-          <div style={{ ...styles.infoText, marginBottom: '2rem' }}>💰 <strong>₹{totalSales.toFixed(2)}</strong></div>
+          <button onClick={() => setCollapsed(!collapsed)} style={styles.toggleBtn}>
+            {collapsed ? '☰' : '✖'}
+          </button>
 
-          <SidebarLink label="📋 Menu" to="/menu" />
-          <SidebarLink label="🧾 Orders" to="/orders" />
-          <SidebarLink label="📦 History" to="/history" />
-          <SidebarLink label="⚙️ Settings" to="/settings" />
+          {!collapsed && (
+            <>
+              <div style={styles.infoText}>🕒 <strong>{clock}</strong></div>
+              <div style={{ ...styles.infoText, marginBottom: '2rem' }}>
+                💰 <strong>₹{totalSales.toFixed(2)}</strong>
+              </div>
 
-          <div style={{ marginTop: 'auto' }}>
-            <button onClick={async () => await supabase.auth.signOut()} style={styles.logoutBtn}>🚪 Logout</button>
-          </div>
+              <SidebarLink label="📋 Menu" to="/menu" />
+              <SidebarLink label="🧾 Orders" to="/orders" />
+              <SidebarLink label="📦 History" to="/history" />
+              <SidebarLink label="⚙️ Settings" to="/settings" />
+
+              <div style={{ marginTop: 'auto' }}>
+                <button
+                  onClick={async () => await supabase.auth.signOut()}
+                  style={styles.logoutBtn}
+                >
+                  🚪 Logout
+                </button>
+              </div>
+            </>
+          )}
         </div>
+
+        {/* Overlay for mobile */}
+        {collapsed && window.innerWidth < 768 && (
+          <div onClick={() => setCollapsed(false)} style={styles.overlay}></div>
+        )}
 
         <div style={styles.mainContent}>
           <Routes>
@@ -152,32 +178,43 @@ function LoginForm() {
 const styles = {
   appContainer: {
     display: 'flex',
-    flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+    flexDirection: 'row',
     height: '100vh',
-    fontFamily: 'Segoe UI, sans-serif'
+    fontFamily: 'Segoe UI, sans-serif',
+    position: 'relative'
   },
   sidebar: {
-    width: window.innerWidth < 768 ? '100%' : '240px',
+    width: '240px',
     backgroundColor: '#212121',
     color: '#fff',
     padding: '1.5rem',
     display: 'flex',
     flexDirection: 'column',
-    boxShadow: '2px 0 5px rgba(0,0,0,0.1)'
+    boxShadow: '2px 0 5px rgba(0,0,0,0.1)',
+    transition: 'transform 0.3s ease-in-out',
+    zIndex: 1000,
+    position: window.innerWidth < 768 ? 'absolute' : 'relative',
+    height: '100vh',
+    top: 0,
+    left: 0
   },
-  logo: {
-    marginBottom: '2rem',
-    fontSize: '1.5rem'
-  },
-  infoText: {
-    marginBottom: '1rem',
-    fontSize: '1rem'
+  sidebarCollapsed: {
+    transform: 'translateX(-100%)'
   },
   mainContent: {
     flex: 1,
     padding: '1.5rem',
     backgroundColor: '#f5f5f5',
-    overflowY: 'auto'
+    overflowY: 'auto',
+    width: '100%'
+  },
+  logo: {
+    marginBottom: '1rem',
+    fontSize: '1.5rem'
+  },
+  infoText: {
+    marginBottom: '1rem',
+    fontSize: '1rem'
   },
   loginContainer: {
     maxWidth: '400px',
@@ -203,5 +240,25 @@ const styles = {
     color: '#fff',
     fontSize: '1rem',
     cursor: 'pointer'
+  },
+  toggleBtn: {
+    position: 'absolute',
+    top: '1rem',
+    right: '-2.5rem',
+    backgroundColor: '#1565c0',
+    color: '#fff',
+    border: 'none',
+    padding: '0.5rem 0.8rem',
+    borderRadius: '4px',
+    cursor: 'pointer'
+  },
+  overlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    zIndex: 999
   }
 };
