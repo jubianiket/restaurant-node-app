@@ -98,8 +98,8 @@ export default function App() {
         </div>
 
         {/* Overlay for mobile */}
-        {collapsed && window.innerWidth < 768 && (
-          <div onClick={() => setCollapsed(false)} style={styles.overlay}></div>
+        {!collapsed && window.innerWidth < 768 && (
+          <div onClick={() => setCollapsed(true)} style={styles.overlay}></div>
         )}
 
         <div style={styles.mainContent}>
@@ -199,7 +199,9 @@ const styles = {
     left: 0
   },
   sidebarCollapsed: {
-    transform: 'translateX(-100%)'
+    transform: 'translateX(-100%)',
+    pointerEvents: 'none',
+    visibility: 'hidden'
   },
   mainContent: {
     flex: 1,
@@ -250,7 +252,8 @@ const styles = {
     border: 'none',
     padding: '0.5rem 0.8rem',
     borderRadius: '4px',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    zIndex: 1100
   },
   overlay: {
     position: 'fixed',
