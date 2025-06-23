@@ -60,62 +60,59 @@ export default function App() {
   if (!user) return <LoginForm />;
 
   return (
-    <Router>
-      <div style={styles.appContainer}>
-        {/* ✅ Toggle Button Outside Sidebar */}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          style={styles.toggleBtn}
-        >
-          {collapsed ? '☰' : '✖'}
-        </button>
+    <>
+      {/* ✅ Toggle Button outside sidebar for visibility */}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        style={styles.toggleBtn}
+      >
+        {collapsed ? '☰' : '✖'}
+      </button>
 
-        {/* Sidebar */}
-        <div
-          style={{
-            ...styles.sidebar,
-            width: collapsed ? '60px' : '240px'
-          }}
-        >
-          <div style={styles.sidebarContent}>
-            {!collapsed && <h1 style={styles.logo}>🍽️ POS System</h1>}
+      <Router>
+        <div style={styles.appContainer}>
+          {/* Sidebar */}
+          <div style={{ ...styles.sidebar, width: collapsed ? '60px' : '240px' }}>
+            <div style={styles.sidebarContent}>
+              {!collapsed && <h1 style={styles.logo}>🍽️ POS System</h1>}
 
-            <div style={collapsed ? styles.collapsedText : styles.infoText}>
-              🕒 <strong>{!collapsed && clock}</strong>
-            </div>
+              <div style={collapsed ? styles.collapsedText : styles.infoText}>
+                🕒 <strong>{!collapsed && clock}</strong>
+              </div>
 
-            <div style={{ ...(collapsed ? styles.collapsedText : styles.infoText), marginBottom: '2rem' }}>
-              💰 <strong>{!collapsed && `₹${totalSales.toFixed(2)}`}</strong>
-            </div>
+              <div style={{ ...(collapsed ? styles.collapsedText : styles.infoText), marginBottom: '2rem' }}>
+                💰 <strong>{!collapsed && `₹${totalSales.toFixed(2)}`}</strong>
+              </div>
 
-            <SidebarLink label="📋 Menu" to="/menu" collapsed={collapsed} />
-            <SidebarLink label="🧾 Orders" to="/orders" collapsed={collapsed} />
-            <SidebarLink label="📦 History" to="/history" collapsed={collapsed} />
-            <SidebarLink label="⚙️ Settings" to="/settings" collapsed={collapsed} />
+              <SidebarLink label="📋 Menu" to="/menu" collapsed={collapsed} />
+              <SidebarLink label="🧾 Orders" to="/orders" collapsed={collapsed} />
+              <SidebarLink label="📦 History" to="/history" collapsed={collapsed} />
+              <SidebarLink label="⚙️ Settings" to="/settings" collapsed={collapsed} />
 
-            <div style={{ marginTop: 'auto' }}>
-              <button
-                onClick={async () => await supabase.auth.signOut()}
-                style={styles.logoutBtn}
-              >
-                {collapsed ? '🚪' : '🚪 Logout'}
-              </button>
+              <div style={{ marginTop: 'auto' }}>
+                <button
+                  onClick={async () => await supabase.auth.signOut()}
+                  style={styles.logoutBtn}
+                >
+                  {collapsed ? '🚪' : '🚪 Logout'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Main Content */}
-        <div style={styles.mainContent}>
-          <Routes>
-            <Route path="/" element={<Navigate to="/menu" />} />
-            <Route path="/menu" element={<Menu />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/history" element={<OrderHistory />} />
-            <Route path="/settings" element={<Settings />} />
-          </Routes>
+          {/* Main Content */}
+          <div style={styles.mainContent}>
+            <Routes>
+              <Route path="/" element={<Navigate to="/menu" />} />
+              <Route path="/menu" element={<Menu />} />
+              <Route path="/orders" element={<Orders />} />
+              <Route path="/history" element={<OrderHistory />} />
+              <Route path="/settings" element={<Settings />} />
+            </Routes>
+          </div>
         </div>
-      </div>
-    </Router>
+      </Router>
+    </>
   );
 }
 
@@ -205,7 +202,7 @@ const styles = {
     position: 'fixed',
     top: '1rem',
     left: '1rem',
-    zIndex: 2000,
+    zIndex: 3000,
     backgroundColor: '#1565c0',
     color: '#fff',
     border: 'none',
