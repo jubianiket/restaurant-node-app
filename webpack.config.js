@@ -6,6 +6,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
+    publicPath: '/',             // ✅ REQUIRED for React Router to work on Vercel
     clean: true
   },
   resolve: {
@@ -27,7 +28,6 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './public/index.html',
-      favicon: false
     }),
   ],
   devServer: {
@@ -35,5 +35,6 @@ module.exports = {
     port: 3000,
     open: true,
     hot: true,
+    historyApiFallback: true    // ✅ also required for React Router to work in dev
   },
 };
