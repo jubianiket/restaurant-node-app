@@ -36,6 +36,38 @@ export default function Orders() {
     }
   };
 
+  const fetchPreviousDeliveryByPhone = async (phone) => {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('building_no, flat_no')
+      .eq('phone_no', phone)
+      .eq('type', 'delivery')
+      .order('timestamp', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (!error && data) {
+      setBuilding(data.building_no);
+      setFlat(data.flat_no);
+    }
+  };
+
+  const fetchPreviousDeliveryByAddress = async (building, flat) => {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('phone_no')
+      .eq('building_no', building)
+      .eq('flat_no', flat)
+      .eq('type', 'delivery')
+      .order('timestamp', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (!error && data) {
+      setPhone(data.phone_no);
+    }
+  };
+
   const placeOrder = async () => {
     if (selectedItems.length === 0) return alert('Select at least one item');
     if (orderType === 'dine-in' && !tableNo) return alert('Select table number');
@@ -50,7 +82,7 @@ export default function Orders() {
       phone_no: orderType === 'delivery' ? phone : null,
       building_no: orderType === 'delivery' ? building : null,
       flat_no: orderType === 'delivery' ? flat : null,
-      status: 'pending'
+      status: 'received'
     }]);
 
     if (error) console.error(error.message);
@@ -73,10 +105,14 @@ export default function Orders() {
 
       <div style={styles.section}>
         <label><strong>Order Type:</strong></label>
-        <select value={orderType} onChange={(e) => setOrderType(e.target.value)} style={styles.select}>
-          <option value="dine-in">Dine-in</option>
-          <option value="delivery">Delivery</option>
-        </select>
+        <div>
+          <label>
+            <input type="radio" value="dine-in" checked={orderType === 'dine-in'} onChange={(e) => setOrderType(e.target.value)} /> Dine-in
+          </label>
+          <label style={{ marginLeft: '1rem' }}>
+            <input type="radio" value="delivery" checked={orderType === 'delivery'} onChange={(e) => setOrderType(e.target.value)} /> Delivery
+          </label>
+        </div>
       </div>
 
       {orderType === 'dine-in' && (
@@ -100,15 +136,41 @@ export default function Orders() {
 
       {orderType === 'delivery' && (
         <div style={styles.section}>
-          <input type="text" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} style={styles.inputFull} />
+          <input
+            type="text"
+            placeholder="Phone number"
+            value={phone}
+            onChange={(e) => {
+              const newPhone = e.target.value;
+              setPhone(newPhone);
+              if (newPhone.length >= 10) {
+                fetchPreviousDeliveryByPhone(newPhone);
+              }
+            }}
+            style={styles.inputFull}
+          />
           <div style={styles.gridTwo}>
-            <select value={building} onChange={(e) => setBuilding(e.target.value)} style={styles.select}>
+            <select
+              value={building}
+              onChange={(e) => {
+                const newBuilding = e.target.value;
+                setBuilding(newBuilding);
+                if (newBuilding && flat) fetchPreviousDeliveryByAddress(newBuilding, flat);
+              }}
+              style={styles.select}>
               <option value="">Select Building</option>
               <option value="A">A</option>
               <option value="B">B</option>
               <option value="C">C</option>
             </select>
-            <select value={flat} onChange={(e) => setFlat(e.target.value)} style={styles.select}>
+            <select
+              value={flat}
+              onChange={(e) => {
+                const newFlat = e.target.value;
+                setFlat(newFlat);
+                if (building && newFlat) fetchPreviousDeliveryByAddress(building, newFlat);
+              }}
+              style={styles.select}>
               <option value="">Select Flat</option>
               <option value="101">101</option>
               <option value="102">102</option>

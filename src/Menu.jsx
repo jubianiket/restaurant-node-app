@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useContext  } from 'react';
+import { RefreshContext } from './RefreshContext';
 import { supabase } from './supabaseClient';
 
 export default function Menu() {
+  const { refreshFlag, triggerRefresh } = useContext(RefreshContext);
   const [menu, setMenu] = useState([]);
   const [form, setForm] = useState({
     name: '',
@@ -19,11 +21,16 @@ export default function Menu() {
     fetchMenu();
   }, []);
 
+  useEffect(() => {
+  fetchMenu(); // or fetchSettings, fetchOrders, etc.
+}, [refreshFlag]);
+
   const fetchMenu = async () => {
     const { data, error } = await supabase
       .from('menu')
       .select('id, name, price, category, portion, available')
       .order('id', { ascending: true });
+      console.log(data, error)
 
     if (error) console.error(error);
     else setMenu(data);
@@ -81,7 +88,7 @@ export default function Menu() {
   return (
     <div style={styles.container}>
       <h2>📋 <b>Manage Menu</b></h2>
-
+      <button onClick={triggerRefresh}>🔄 Refresh All</button>
       <div style={styles.formRow}>
         <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} style={styles.input} />
         <input type="number" placeholder="Price" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} style={styles.input} />

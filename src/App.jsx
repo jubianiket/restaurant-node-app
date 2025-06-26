@@ -5,6 +5,8 @@ import Menu from './Menu';
 import Orders from './Orders';
 import Settings from './Settings';
 import OrderHistory from './OrderHistory';
+import Dashboard from './Dashboard';
+import { RefreshProvider } from './RefreshContext';
 
 const supabase = createClient(
   'https://iwfunipsnoqfasntaofl.supabase.co',
@@ -13,127 +15,11 @@ const supabase = createClient(
 
 export default function App() {
   return (
-    <Router>
-      <AppLayout />
-    </Router>
-  );
-}
-
-function AppLayout() {
-  const [user, setUser] = useState(null);
-  const [clock, setClock] = useState('');
-  const [totalSales, setTotalSales] = useState(0);
-  const [collapsed, setCollapsed] = useState(window.innerWidth < 768);
-  const location = useLocation();
-
-  // Auth
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user ?? null);
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, []);
-
-  // Clock
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
-      let hours = now.getHours();
-      const minutes = now.getMinutes().toString().padStart(2, '0');
-      const seconds = now.getSeconds().toString().padStart(2, '0');
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      hours = hours % 12 || 12;
-      setClock(`${hours}:${minutes}:${seconds} ${ampm}`);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Sales
-  useEffect(() => {
-    const fetchTotalSales = async () => {
-      const { data, error } = await supabase.from('orders').select('*');
-      if (!error && data) {
-        const total = data.reduce((sum, order) => {
-          return sum + order.items.reduce((s, i) => s + Number(i.price || 0), 0);
-        }, 0);
-        setTotalSales(total);
-      }
-    };
-    fetchTotalSales();
-  }, []);
-
-  // Auto collapse + scroll top on route change
-  useEffect(() => {
-    if (window.innerWidth < 768) {
-      setCollapsed(true);
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [location]);
-
-  // Keyboard shortcut: Ctrl+B to toggle sidebar
-  useEffect(() => {
-    const handleKey = (e) => {
-      if (e.ctrlKey && e.key === 'b') {
-        setCollapsed((prev) => !prev);
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, []);
-
-  if (!user) return <LoginForm />;
-
-  return (
-    <div style={styles.appContainer}>
-      {/* Sidebar */}
-      <div style={{ ...styles.sidebar, width: collapsed ? '60px' : '240px' }}>
-        <button onClick={() => setCollapsed(!collapsed)} style={styles.toggleBtn}>
-          {collapsed ? '☰' : '✖'}
-        </button>
-
-        <div style={styles.sidebarContent}>
-          {!collapsed && <h1 style={styles.logo}>🍽️ POS System</h1>}
-
-          <div style={collapsed ? styles.collapsedText : styles.infoText}>
-            🕒 <strong>{!collapsed && clock}</strong>
-          </div>
-
-          <div style={{ ...(collapsed ? styles.collapsedText : styles.infoText), marginBottom: '2rem' }}>
-            💰 <strong>{!collapsed && `₹${totalSales.toFixed(2)}`}</strong>
-          </div>
-
-          <SidebarLink label="📋 Menu" to="/menu" collapsed={collapsed} />
-          <SidebarLink label="🧾 Orders" to="/orders" collapsed={collapsed} />
-          <SidebarLink label="📦 History" to="/history" collapsed={collapsed} />
-          <SidebarLink label="⚙️ Settings" to="/settings" collapsed={collapsed} />
-
-          <div style={{ marginTop: 'auto' }}>
-            <button
-              onClick={async () => await supabase.auth.signOut()}
-              style={styles.logoutBtn}
-            >
-              {collapsed ? '🚪' : '🚪 Logout'}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div style={styles.mainContent}>
-        <Routes>
-          <Route path="/" element={<Navigate to="/menu" />} />
-          <Route path="/menu" element={<Menu />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/history" element={<OrderHistory />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
-      </div>
-    </div>
+    <RefreshProvider>
+      <Router>
+        <AppLayout />
+      </Router>
+    </RefreshProvider>
   );
 }
 
@@ -163,10 +49,142 @@ function SidebarLink({ label, to, collapsed }) {
   );
 }
 
+function AppLayout() {
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState('');
+  const [clock, setClock] = useState('');
+  const [totalSales, setTotalSales] = useState(0);
+  const [collapsed, setCollapsed] = useState(window.innerWidth < 768);
+  const location = useLocation();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data }) => {
+      const user = data.session?.user ?? null;
+      setUser(user);
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        setRole(profile?.role || '');
+      }
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const user = session?.user ?? null;
+      setUser(user);
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        setRole(profile?.role || '');
+      }
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const seconds = now.getSeconds().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      setClock(`${hours}:${minutes}:${seconds} ${ampm}`);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const fetchTotalSales = async () => {
+      const { data, error } = await supabase.from('orders').select('*');
+      if (!error && data) {
+        const total = data.reduce((sum, order) => {
+          return sum + order.items.reduce((s, i) => s + Number(i.price || 0), 0);
+        }, 0);
+        setTotalSales(total);
+      }
+    };
+    fetchTotalSales();
+  }, []);
+
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      setCollapsed(true);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [location]);
+
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.ctrlKey && e.key === 'b') {
+        setCollapsed((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
+  if (!user) return <LoginForm />;
+
+  return (
+    <div style={styles.appContainer}>
+      <div style={{ ...styles.sidebar, width: collapsed ? '60px' : '240px' }}>
+        <button onClick={() => setCollapsed(!collapsed)} style={styles.toggleBtn}>
+          {collapsed ? '☰' : '✖'}
+        </button>
+
+        <div style={styles.sidebarContent}>
+          {!collapsed && <h1 style={styles.logo}>🍽️ POS System</h1>}
+
+          <div style={collapsed ? styles.collapsedText : styles.infoText}>
+            🕒 <strong>{!collapsed && clock}</strong>
+          </div>
+
+          <div style={{ ...(collapsed ? styles.collapsedText : styles.infoText), marginBottom: '2rem' }}>
+            💰 <strong>{!collapsed && `₹${totalSales.toFixed(2)}`}</strong>
+          </div>
+
+          {role === 'admin' && <SidebarLink label="📊 Dashboard" to="/dashboard" collapsed={collapsed} />}
+          <SidebarLink label="📋 Menu" to="/menu" collapsed={collapsed} />
+          <SidebarLink label="🧾 Orders" to="/orders" collapsed={collapsed} />
+          <SidebarLink label="📦 History" to="/history" collapsed={collapsed} />
+          {role === 'admin' && <SidebarLink label="⚙️ Settings" to="/settings" collapsed={collapsed} />}
+
+          <div style={{ marginTop: 'auto' }}>
+            <button
+              onClick={async () => await supabase.auth.signOut()}
+              style={styles.logoutBtn}
+            >
+              {collapsed ? '🚪' : '🚪 Logout'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style={styles.mainContent}>
+        <Routes>
+          {role === 'admin' && <Route path="/dashboard" element={<Dashboard />} />}
+          <Route path="/" element={<Navigate to="/menu" />} />
+          <Route path="/menu" element={<Menu />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/history" element={<OrderHistory />} />
+          {role === 'admin' && <Route path="/settings" element={<Settings />} />}
+        </Routes>
+      </div>
+    </div>
+  );
+}
+
 function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [selectedRole, setSelectedRole] = useState('staff');
 
   const login = async () => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -174,8 +192,12 @@ function LoginForm() {
   };
 
   const signup = async () => {
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) setError(error.message);
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (!error && data.user) {
+      await supabase.from('profiles').upsert({ id: data.user.id, role: selectedRole });
+    } else if (error) {
+      setError(error.message);
+    }
   };
 
   return (
@@ -195,8 +217,34 @@ function LoginForm() {
         onChange={(e) => setPassword(e.target.value)}
         style={styles.inputStyle}
       /><br />
+
+      <div style={{ marginBottom: '1rem' }}>
+        <label>
+          <input
+            type="radio"
+            name="role"
+            value="admin"
+            checked={selectedRole === 'admin'}
+            onChange={(e) => setSelectedRole(e.target.value)}
+          />{' '}
+          Admin
+        </label>{' '}
+        <label style={{ marginLeft: '1rem' }}>
+          <input
+            type="radio"
+            name="role"
+            value="staff"
+            checked={selectedRole === 'staff'}
+            onChange={(e) => setSelectedRole(e.target.value)}
+          />{' '}
+          Staff
+        </label>
+      </div>
+
       <button onClick={login} style={{ ...styles.inputStyle, backgroundColor: '#1976d2', color: 'white' }}>Login</button>
-      <button onClick={signup} style={{ ...styles.inputStyle, backgroundColor: '#555', color: 'white' }}>Sign Up</button>
+      {selectedRole === 'admin' && (
+        <button onClick={signup} style={{ ...styles.inputStyle, backgroundColor: '#555', color: 'white' }}>Sign Up</button>
+      )}
     </div>
   );
 }

@@ -7,11 +7,12 @@
     "start": "webpack serve --mode development --open",
     "build": "webpack --mode production"
   },
-  "dependencies": { 
+  "dependencies": {
     "@supabase/supabase-js": "^2.39.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^7.6.2"
+    "react-router-dom": "^7.6.2",
+    "recharts": "^2.9.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.9",
