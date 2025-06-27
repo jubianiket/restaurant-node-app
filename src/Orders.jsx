@@ -194,30 +194,32 @@ export default function Orders() {
           return (
             <div key={category} style={styles.card}>
               <h4 style={styles.cardTitle}>{category}</h4>
-              <table style={styles.table}>
-                <thead>
-                  <tr>
-                    <th style={styles.th}>Name</th>
-                    <th style={styles.th}>Price</th>
-                    <th style={styles.th}>Portion</th>
-                    <th style={styles.th}>Select</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {categoryItems.map(item => (
-                    <tr key={item.id} style={{ background: selectedItems.find(i => i.id === item.id) ? '#dff0d8' : 'white' }}>
-                      <td style={styles.td}>{item.name}</td>
-                      <td style={styles.td}>₹{item.price}</td>
-                      <td style={styles.td}>{item.portion || 'N/A'}</td>
-                      <td style={styles.td}>
-                        <button onClick={() => toggleItem(item)} style={styles.actionBtn}>
-                          {selectedItems.find(i => i.id === item.id) ? 'Remove' : 'Add'}
-                        </button>
-                      </td>
+              <div style={styles.tableWrapper}>
+                <table style={styles.table}>
+                  <thead>
+                    <tr>
+                      <th style={styles.th}>Name</th>
+                      <th style={styles.th}>Price</th>
+                      <th style={styles.th}>Portion</th>
+                      <th style={styles.th}>Select</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {categoryItems.map(item => (
+                      <tr key={item.id} style={{ background: selectedItems.find(i => i.id === item.id) ? '#dff0d8' : 'white' }}>
+                        <td style={styles.td}>{item.name}</td>
+                        <td style={styles.td}>₹{item.price}</td>
+                        <td style={styles.td}>{item.portion || 'N/A'}</td>
+                        <td style={styles.td}>
+                          <button onClick={() => toggleItem(item)} style={styles.actionBtn}>
+                            {selectedItems.find(i => i.id === item.id) ? 'Remove' : 'Add'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           );
         })}
@@ -240,12 +242,13 @@ const styles = {
   inputFull: { marginBottom: '1rem', padding: '0.5rem', width: '100%' },
   gridWrap: { display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' },
   tableButton: { padding: '0.5rem 1rem', color: '#fff', border: 'none', borderRadius: '4px' },
-  gridTwo: { display: 'flex', gap: '1rem' },
-  orderBtn: { marginBottom: '1rem', padding: '0.6rem 1.2rem', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '4px' },
+  gridTwo: { display: 'flex', gap: '1rem', flexWrap: 'wrap' },
+  orderBtn: { marginBottom: '1rem', padding: '0.6rem 1.2rem', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '4px', width: '100%' },
   menuGrid: { display: 'flex', flexWrap: 'wrap', gap: '1rem' },
-  card: { flex: '1 1 calc(33.33% - 1rem)', minWidth: '300px', background: '#fff', border: '1px solid #ccc', borderRadius: '8px', padding: '1rem' },
+  card: { flex: '1 1 100%', background: '#fff', border: '1px solid #ccc', borderRadius: '8px', padding: '1rem' },
   cardTitle: { marginBottom: '0.5rem', borderBottom: '1px solid #eee', paddingBottom: '0.25rem' },
-  table: { width: '100%', borderCollapse: 'collapse' },
+  tableWrapper: { overflowX: 'auto', WebkitOverflowScrolling: 'touch' },
+  table: { width: '100%', minWidth: '500px', borderCollapse: 'collapse' },
   th: { padding: '0.5rem', textAlign: 'left', background: '#f2f2f2' },
   td: { padding: '0.5rem' },
   actionBtn: { padding: '0.25rem 0.5rem', backgroundColor: '#007bff', color: '#fff', border: 'none', borderRadius: '4px' },
