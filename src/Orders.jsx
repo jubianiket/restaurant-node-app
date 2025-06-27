@@ -245,9 +245,26 @@ export default function Orders() {
 }
 
 const styles = {
-  outerWrap: { display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', width: '100%' },
-  sidebar: { minWidth: '150px', background: '#f2f2f2', padding: '1rem', fontWeight: 'bold' },
-  container: { padding: '1.5rem', fontFamily: 'Segoe UI, sans-serif', width: '100%' },
+  outerWrap: {
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'nowrap',
+    width: '100%',
+    minHeight: '100vh',
+    overflowX: 'hidden'
+  },
+  sidebar: {
+    minWidth: '150px',
+    background: '#f2f2f2',
+    padding: '1rem',
+    fontWeight: 'bold',
+    flexShrink: 0
+  },
+  container: {
+    padding: '1.5rem',
+    fontFamily: 'Segoe UI, sans-serif',
+    flexGrow: 1
+  },
   header: { marginBottom: '1rem' },
   section: { marginBottom: '1rem' },
   select: { padding: '0.5rem', flex: 1 },
