@@ -235,7 +235,7 @@ export default function Orders() {
 }
 
 const styles = {
-  container: { padding: '1.5rem', fontFamily: 'Segoe UI, sans-serif', maxWidth: '100%', overflowX: 'hidden' },
+  container: { padding: '1.5rem', fontFamily: 'Segoe UI, sans-serif', maxWidth: '100%' },
   header: { marginBottom: '1rem' },
   section: { marginBottom: '1rem' },
   select: { padding: '0.5rem', flex: 1 },
@@ -247,7 +247,7 @@ const styles = {
   menuGrid: { display: 'flex', flexWrap: 'wrap', gap: '1rem' },
   card: { flex: '1 1 calc(33.33% - 1rem)', minWidth: '300px', background: '#fff', border: '1px solid #ccc', borderRadius: '8px', padding: '1rem' },
   cardTitle: { marginBottom: '0.5rem', borderBottom: '1px solid #eee', paddingBottom: '0.25rem' },
-  table: { width: '100%', borderCollapse: 'collapse' },
+  table: { width: '100%',  minWidth: '500px', borderCollapse: 'collapse' },
   th: { padding: '0.5rem', textAlign: 'left', background: '#f2f2f2' },
   td: { padding: '0.5rem' },
   actionBtn: { padding: '0.25rem 0.5rem', backgroundColor: '#007bff', color: '#fff', border: 'none', borderRadius: '4px' },
