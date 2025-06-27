@@ -282,4 +282,4 @@ const styles = {
   td: { padding: '0.5rem' },
   actionBtn: { padding: '0.25rem 0.5rem', backgroundColor: '#007bff', color: '#fff', border: 'none', borderRadius: '4px' },
   pageBtn: { padding: '0.5rem 1rem', margin: '0 1rem' }
-};
+}
