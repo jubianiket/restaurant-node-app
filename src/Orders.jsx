@@ -107,7 +107,7 @@ export default function Orders() {
   const paginatedCategories = categories.slice(page * pageSize, (page + 1) * pageSize);
 
   return (
-    <div style={styles.outerWrap}>
+    <div style={styles.responsiveWrap}>
       <div style={styles.sidebar}>🍽️ <b>Sidebar</b></div>
       <div style={styles.container}>
         <h2 style={styles.header}>🧾 <b>Manage Orders</b></h2>
@@ -245,13 +245,14 @@ export default function Orders() {
 }
 
 const styles = {
-  outerWrap: {
+  responsiveWrap: {
     display: 'flex',
     flexDirection: 'row',
     flexWrap: 'nowrap',
     width: '100%',
     minHeight: '100vh',
-    overflowX: 'hidden'
+    overflowX: 'hidden',
+    flex: 1
   },
   sidebar: {
     minWidth: '150px',
