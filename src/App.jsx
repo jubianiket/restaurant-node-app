@@ -10,7 +10,7 @@ import { RefreshProvider } from './RefreshContext';
 
 const supabase = createClient(
   'https://iwfunipsnoqfasntaofl.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3ZnVuaXBzbm9xZmFzbnRhb2ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2NzU1MjQsImV4cCI6MjA2NjI1MTUyNH0.E2YU0wDS16TUsIbX8qIM3Xo6XZF3Z_GuWFUmjWw7Z7A'
+  'YOUR_PUBLIC_ANON_KEY'
 );
 
 export default function App() {
@@ -226,9 +226,8 @@ function LoginForm() {
             value="admin"
             checked={selectedRole === 'admin'}
             onChange={(e) => setSelectedRole(e.target.value)}
-          />{' '}
-          Admin
-        </label>{' '}
+          /> Admin
+        </label>
         <label style={{ marginLeft: '1rem' }}>
           <input
             type="radio"
@@ -236,8 +235,7 @@ function LoginForm() {
             value="staff"
             checked={selectedRole === 'staff'}
             onChange={(e) => setSelectedRole(e.target.value)}
-          />{' '}
-          Staff
+          /> Staff
         </label>
       </div>
 
@@ -252,16 +250,19 @@ function LoginForm() {
 const styles = {
   appContainer: {
     display: 'flex',
-    height: '100vh',
+    flexDirection: 'row',
+    minHeight: '100vh',
+    width: '100vw',
+    overflow: 'hidden',
     fontFamily: 'Segoe UI, sans-serif'
   },
   sidebar: {
-    position: 'relative',
     backgroundColor: '#212121',
     color: '#fff',
     transition: 'width 0.3s ease',
     overflowX: 'hidden',
-    height: '100vh',
+    minHeight: '100vh',
+    flexShrink: 0,
     zIndex: 1000
   },
   sidebarContent: {
@@ -298,10 +299,11 @@ const styles = {
     textAlign: 'center'
   },
   mainContent: {
-    flex: 1,
+    flexGrow: 1,
     padding: '1.5rem',
     backgroundColor: '#f5f5f5',
-    overflowY: 'auto'
+    overflowY: 'auto',
+    width: '100%'
   },
   loginContainer: {
     maxWidth: '400px',
