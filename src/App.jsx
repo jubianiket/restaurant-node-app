@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import Menu from './Menu';
 import Orders from './Orders';
 import Settings from './Settings';
